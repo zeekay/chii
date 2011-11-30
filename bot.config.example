@@ -1,0 +1,20 @@
+channels:
+- smth
+cmd_prefix: .
+log_channels: true
+log_chii: false
+log_stdout: true
+logs_dir: logs
+modules:
+- commands
+- events
+- tasks
+nickname: chii
+owner: you!you@yourhost
+port: 6667
+realname: chii
+server: irc.esper.net
+threaded: false
+user_roles:
+  admins:
+  - you!you@yourhost

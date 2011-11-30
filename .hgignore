@@ -1,0 +1,23 @@
+syntax: glob
+**.old
+**.save
+**.orig
+bot.config
+**.pyc
+**.pyo
+**.DS_Store
+**.log
+commands/muse.py
+local/**
+old/**
+logs/**
+brain.txt
+src/**
+chii.config
+events/megahal.brain
+.cache/*
+**.trn
+lib
+bin
+include
+django_chii
