@@ -59,14 +59,12 @@ class ChiiConfig(dict):
             return self.defaults[key]
 
     def save(self):
-        f = open(self.file, 'w')
-        f.write(yaml.dump(dict((key, self.__getitem__(key)) for key in sorted(self.keys())), default_flow_style=False))
-        f.close()
+        with open(self.file, 'w') as f:
+            f.write(yaml.dump(dict((key, self.__getitem__(key)) for key in sorted(self.keys())), default_flow_style=False))
 
     def save_defaults(self):
-        f = open(self.file, 'w')
-        f.write(yaml.dump(dict((key, self.defaults[key]) for key in sorted(self.defaults)), default_flow_style=False))
-        f.close()
+        with open(self.file, 'w') as f:
+            f.write(yaml.dump(dict((key, self.defaults[key]) for key in sorted(self.defaults)), default_flow_style=False))
 
 ### decorators ###
 def command(*args, **kwargs):
@@ -154,15 +152,15 @@ class ChiiLogger:
             if not os.path.isdir(self.logs_dir):
                 os.mkdir(self.logs_dir)
             if config['log_channels']:
-                self.channel_logs = dict(((channel, open(os.path.join(self.logs_dir, channel +'.log'), 'a')) for channel in config['channels']))
+                self.channel_logs = dict((channel, os.path.join(self.logs_dir, channel +'.log')) for channel in config['channels']))
             if config['log_chii']:
-                self.chii_log = open(os.path.join(self.logs_dir, config['nickname'] + '.log'), 'a')
+                self.chii_log = os.path.join(self.logs_dir, config['nickname'] + '.log')
                 self.observer = log.FileLogObserver(self.chii_log)
                 self.observer.start()
             if config['log_privmsg']:
                 self.log_privmsg = True
         else:
-            self.log = self.close = lambda *args: None
+            self.log = lambda *args: None
 
     def log(self, message, channel=None):
         """Write a message to the file."""
@@ -170,22 +168,15 @@ class ChiiLogger:
             if channel.startswith('#'):
                 channel = channel[1:]
             if channel in self.channel_logs:
-                file = self.channel_logs[channel]
-                timestamp = time.strftime("[%H:%M:%S]", time.localtime(time.time()))
-                file.write('%s %s\n' % (timestamp, message))
-                file.flush()
+                log_file = self.channel_logs[channel]
             elif self.log_privmsg:
-                file = open(os.path.join(self.logs_dir, channel + '.log'), 'a')
+                log_file = os.path.join(self.logs_dir, channel + '.log')
+            else:
+                return
+            with open(log_files) as f:
                 timestamp = time.strftime("[%H:%M:%S]", time.localtime(time.time()))
-                file.write('%s %s\n' % (timestamp, message))
-                file.close()
+                f.write('%s %s\n' % (timestamp, message))
 
-    def close(self):
-        if self.chii_log:
-            self.observer.stop()
-            self.chii_log.close()
-        for channel in self.channel_logs.values():
-            channel.close()
 
 class ChiiBot:
     """what makes chii, chii"""
@@ -436,7 +427,6 @@ class ChiiBot:
         self._stop_tasks()
         self.factory.doStop()
         self.quit(message)
-        reactor.callLater(1, self.logger.close, None)
         reactor.callLater(1, reactor.stop, None)
         reactor.stop()
 
@@ -458,7 +448,6 @@ class ChiiProto(irc.IRCClient, ChiiBot):
     def connectionLost(self, reason):
         irc.IRCClient.connectionLost(self, reason)
         self.logger.log("[disconnected at %s]" % time.asctime(time.localtime(time.time())))
-        self.logger.close()
 
     def signedOn(self):
         """Called when bot has succesfully signed on to server."""
