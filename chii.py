@@ -152,7 +152,7 @@ class ChiiLogger:
             if not os.path.isdir(self.logs_dir):
                 os.mkdir(self.logs_dir)
             if config['log_channels']:
-                self.channel_logs = dict((channel, os.path.join(self.logs_dir, channel +'.log')) for channel in config['channels']))
+                self.channel_logs = dict((channel, os.path.join(self.logs_dir, channel +'.log')) for channel in config['channels'])
             if config['log_chii']:
                 self.chii_log = os.path.join(self.logs_dir, config['nickname'] + '.log')
                 self.observer = log.FileLogObserver(self.chii_log)
@@ -173,7 +173,7 @@ class ChiiLogger:
                 log_file = os.path.join(self.logs_dir, channel + '.log')
             else:
                 return
-            with open(log_files) as f:
+            with open(log_file, 'a') as f:
                 timestamp = time.strftime("[%H:%M:%S]", time.localtime(time.time()))
                 f.write('%s %s\n' % (timestamp, message))
 
